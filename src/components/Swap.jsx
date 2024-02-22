@@ -35,18 +35,18 @@ const Swap = () => {
                             <input type="number" name="price" id="price" className="h-20 block w-full rounded-xl border-0 py-1.5 pl-7 pr-20 text-white  placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 text-3xl sm:leading-6 bg-stone-700 " placeholder="0.00" />
                             <div className="absolute inset-y-0 right-0 flex items-center">
                                 <label htmlFor="currency" className="sr-only">Currency</label>
-                                <select id="currency" name="currency" className="h-full rounded-md border-0 bg-transparent py-0 pl-2 pr-7 text-gray-500">
+                                <select id="currency" name="currency" className="h-1/2 rounded-2xl border-0 bg-emerald-950 py-0 pl-2 pr-7 text-teal-500">
                                     <option>USDT</option>
                                     <option>XCRE</option>
                                     <option>MATIC</option>
                                 </select>
                             </div>
                         </div>
-                        <div className="relative rounded-md shadow-sm">
+                        <div className="relative rounded-md shadow-sm my-1">
                             <input type="number" name="price" id="price" className="h-20 block w-full rounded-xl border-0 py-1.5 pl-7 pr-20 text-white  placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 text-3xl sm:leading-6 bg-stone-700 " placeholder="0.00" />
                             <div className="absolute inset-y-0 right-0 flex items-center">
                                 <label htmlFor="currency" className="sr-only">Currency</label>
-                                <select id="currency" name="currency" className="h-full rounded-md border-0 bg-transparent py-0 pl-2 pr-7 text-gray-500">
+                                <select id="currency" name="currency" className="h-1/2 rounded-2xl border-0 bg-emerald-950 py-0 pl-2 pr-7 text-teal-500">
                                     <option>USDT</option>
                                     <option>XCRE</option>
                                     <option>MATIC</option>
