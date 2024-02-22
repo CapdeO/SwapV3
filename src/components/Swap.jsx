@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
+import { useAccount, useConnect } from 'wagmi';
+import { injected } from 'wagmi/connectors'
 
 const Swap = () => {
+    const { address } = useAccount()
+    const { connect } = useConnect()
 
     const [tokenPrice, setTokenPrice] = useState('$0.0123')
 
@@ -36,8 +40,8 @@ const Swap = () => {
                             <div className="absolute inset-y-0 right-0 flex items-center">
                                 <label htmlFor="currency" className="sr-only">Currency</label>
                                 <select id="currency" name="currency" className="h-1/2 rounded-2xl border-0 bg-emerald-950 py-0 pl-2 pr-7 text-teal-500">
-                                    <option>USDT</option>
                                     <option>XCRE</option>
+                                    <option>USDC</option>
                                     <option>MATIC</option>
                                 </select>
                             </div>
@@ -47,7 +51,7 @@ const Swap = () => {
                             <div className="absolute inset-y-0 right-0 flex items-center">
                                 <label htmlFor="currency" className="sr-only">Currency</label>
                                 <select id="currency" name="currency" className="h-1/2 rounded-2xl border-0 bg-emerald-950 py-0 pl-2 pr-7 text-teal-500">
-                                    <option>USDT</option>
+                                    <option>USDC</option>
                                     <option>XCRE</option>
                                     <option>MATIC</option>
                                 </select>
@@ -59,10 +63,22 @@ const Swap = () => {
 
 
                     <div className='w-full'>
-                        <button className='text-teal-500 font-bold w-full bg-emerald-950 py-4 rounded-xl mt-5 text-xl'>
-                            Swap
-                        </button>
+
+                        {!address ? (
+                            <button className='text-teal-500 font-bold w-full bg-emerald-950 py-4 rounded-xl mt-5 text-xl'
+                                onClick={() => connect({ connector: injected() })}>
+                                Connect
+                            </button>
+                        ) : (
+                            <button className='text-teal-500 font-bold w-full bg-emerald-950 py-4 rounded-xl mt-5 text-xl'>
+                                Swap
+                            </button>
+                        )}
+
+
                     </div>
+
+
 
 
                 </div>
