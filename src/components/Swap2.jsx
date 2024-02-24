@@ -22,7 +22,7 @@ import { Token } from '@uniswap/sdk-core'
 
 
 
-function Swap(props) {
+function Swap2(props) {
     const { address, isConnected } = props;
     const [messageApi, contextHolder] = message.useMessage();
     const [slippage, setSlippage] = useState(2.5);
@@ -104,9 +104,6 @@ function Swap(props) {
         setIsOpen(false);
     }
 
-    const Moralis = require("moralis").default;
-    console.log("MORALIS")
-    console.log(Moralis)
 
     async function fetchPrices(one, two) {
 
@@ -558,4 +555,4 @@ function Swap(props) {
     );
 }
 
-export default Swap;
+export default Swap2;

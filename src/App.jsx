@@ -3,6 +3,7 @@ import Swap2 from './components/Swap2'
 import { http, createConfig, WagmiProvider } from 'wagmi'
 import { polygon } from 'viem/chains'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import "./App.css";
 
 function App() {
   const config = createConfig({
