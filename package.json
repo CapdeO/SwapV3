@@ -7,9 +7,11 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "start": "serve dist -s -n -L -p $PORT"
   },
   "dependencies": {
+<<<<<<< HEAD
     "@ant-design/icons": "^5.3.0",
     "@uniswap/permit2-sdk": "^1.2.0",
     "@uniswap/sdk-core": "^4.1.2",
@@ -19,6 +21,13 @@
     "ethers": "^5.7.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+=======
+    "@tanstack/react-query": "^5.22.2",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "serve": "^14.2.1",
+    "viem": "^2.7.12",
+>>>>>>> 469761bc4c60e15fb1baee67d8e9cc06c5715a89
     "wagmi": "^2.5.7"
   },
   "devDependencies": {
