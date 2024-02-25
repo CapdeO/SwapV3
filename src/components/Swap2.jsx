@@ -7,7 +7,7 @@ import {
 } from "@ant-design/icons";
 import tokenList from "../utils/tokenList.json";
 import axios from "axios";
-import { useContractWrite, useSendTransaction, useWaitForTransactionReceipt } from "wagmi";
+import { useAccount, useConnect, useWriteContract, useReadContract, useSendTransaction, useWaitForTransactionReceipt } from "wagmi";
 import { ethers, BigNumber } from 'ethers';
 import abiSwap from '../utils/abiSwap.json'
 import {
@@ -19,17 +19,20 @@ import { AlphaRouter, SwapType } from '@uniswap/smart-order-router'
 import { CurrencyAmount, TradeType, Percent } from '@uniswap/sdk-core'
 import erc20Abi from '../utils/ERC20.json'
 import { Token } from '@uniswap/sdk-core'
+import { injected } from 'wagmi/connectors'
+import { useEthersProvider } from "../utils/ethers.ts";
 
-
-
-function Swap2(props) {
-    const { address, isConnected } = props;
+function Swap2() {
+    const { address: account, isConnected } = useAccount();
+    const ethersProvider = useEthersProvider()
+    const { connect } = useConnect()
+    const { writeContract } = useWriteContract()
     const [messageApi, contextHolder] = message.useMessage();
     const [slippage, setSlippage] = useState(2.5);
     const [tokenOneAmount, setTokenOneAmount] = useState(null);
     const [tokenTwoAmount, setTokenTwoAmount] = useState(null);
     const [tokenOne, setTokenOne] = useState(tokenList[0]);
-    const [tokenTwo, setTokenTwo] = useState(tokenList[1]);
+    const [tokenTwo, setTokenTwo] = useState(tokenList[2]);
     const [isOpen, setIsOpen] = useState(false);
     const [changeToken, setChangeToken] = useState(1);
     const [prices, setPrices] = useState(null);
@@ -44,16 +47,23 @@ function Swap2(props) {
 
     const { data, sendTransaction } = useWaitForTransactionReceipt({
         request: {
-            from: address,
+            from: account,
             to: String(txDetails.to),
             data: String(txDetails.data),
             value: String(txDetails.value),
         }
     })
 
+    const { data: allowancePermit2 } = useReadContract({
+        address: tokenOne.address,
+        abi: erc20Abi,
+        functionName: 'allowance',
+        args: [account, PERMIT2_ADDRESS]
+    })
+
     useEffect(() => {
         window.Browser = {
-            T: () => {}
+            T: () => { }
         };
     }, []);
 
@@ -74,16 +84,16 @@ function Swap2(props) {
         }
     }
 
-    function switchTokens() {
-        setPrices(null);
-        setTokenOneAmount(null);
-        setTokenTwoAmount(null);
-        const one = tokenOne;
-        const two = tokenTwo;
-        setTokenOne(two);
-        setTokenTwo(one);
-        fetchPrices(two.address, one.address);
-    }
+    // function switchTokens() {
+    //     setPrices(null);
+    //     setTokenOneAmount(null);
+    //     setTokenTwoAmount(null);
+    //     const one = tokenOne;
+    //     const two = tokenTwo;
+    //     setTokenOne(two);
+    //     setTokenTwo(one);
+    //     fetchPrices(two.address, one.address);
+    // }
 
     function openModal(asset) {
         setChangeToken(asset);
@@ -105,14 +115,14 @@ function Swap2(props) {
     }
 
 
-    async function fetchPrices(one, two) {
+    // async function fetchPrices(one, two) {
 
-        const res = await axios.get(`https://beathard-backend.fly.dev/tokenPrice`, {
-            params: { addressOne: one, addressTwo: two }
-        })
+    //     const res = await axios.get(`https://beathard-backend.fly.dev/tokenPrice`, {
+    //         params: { addressOne: one, addressTwo: two }
+    //     })
 
-        setPrices(res.data)
-    }
+    //     setPrices(res.data)
+    // }
 
 
 
@@ -131,8 +141,8 @@ function Swap2(props) {
          }
        */
 
-        const provider = new ethers.providers.Web3Provider(window.ethereum);
-        const signer = provider.getSigner();
+        // const provider = new ethers.providers.Web3Provider(window.ethereum);
+        // const signer = provider.getSigner();
 
         const contractToken = new ethers.Contract(
             tokenOne.address, [
@@ -165,53 +175,53 @@ function Swap2(props) {
         }
     }
 
-    const connectWallet = async () => {
-        if (window.ethereum) {
-            try {
-                const provider = new ethers.providers.Web3Provider(window.ethereum);
-                await provider.send("eth_requestAccounts", []);
-                const signer = provider.getSigner();
-                console.log("Account:", await signer.getAddress());
-                setConectado(true)
-            } catch (error) {
-                console.error(error);
-                //  setError("Error al conectar la wallet")
-                setConectado(false)
-            }
-        } else {
-            console.log('Ethereum object not found, install MetaMask.');
-            setError("Instale Metamask")
-            setConectado(false)
-        }
-    }
+    // const connectWallet = async () => {
+    //     if (window.ethereum) {
+    //         try {
+    //             const provider = new ethers.providers.Web3Provider(window.ethereum);
+    //             await provider.send("eth_requestAccounts", []);
+    //             const signer = provider.getSigner();
+    //             console.log("Account:", await signer.getAddress());
+    //             setConectado(true)
+    //         } catch (error) {
+    //             console.error(error);
+    //             //  setError("Error al conectar la wallet")
+    //             setConectado(false)
+    //         }
+    //     } else {
+    //         console.log('Ethereum object not found, install MetaMask.');
+    //         setError("Instale Metamask")
+    //         setConectado(false)
+    //     }
+    // }
 
-    async function putPrice() {
-        const res = await axios.get(`https://beathard-backend.fly.dev/tokenPrice`, {
-            params: { addressOne: "0xFA3c05C2023918A4324fDE7163591Fe6BEBd1692", addressTwo: "0xFA3c05C2023918A4324fDE7163591Fe6BEBd1692" }
-        })
-        setPriceToken(parseFloat(res.data.tokenOne).toFixed(4));
-
-
-    }
+    // async function putPrice() {
+    //     const res = await axios.get(`https://beathard-backend.fly.dev/tokenPrice`, {
+    //         params: { addressOne: "0xFA3c05C2023918A4324fDE7163591Fe6BEBd1692", addressTwo: "0xFA3c05C2023918A4324fDE7163591Fe6BEBd1692" }
+    //     })
+    //     setPriceToken(parseFloat(res.data.tokenOne).toFixed(4));
 
 
+    // }
 
 
-    useEffect(() => {
 
-        fetchPrices(tokenList[0].address, tokenList[1].address)
 
-        connectWallet()
-        putPrice()
+    // useEffect(() => {
 
-    }, [])
+    //     fetchPrices(tokenList[0].address, tokenList[1].address)
 
-    useEffect(() => {
+    //     // connectWallet()
+    //     putPrice()
 
-        if (txDetails.to && isConnected) {
-            // sendTransaction();
-        }
-    }, [txDetails])
+    // }, [])
+
+    // useEffect(() => {
+
+    //     if (txDetails.to && account) {
+    //         // sendTransaction();
+    //     }
+    // }, [txDetails])
 
     useEffect(() => {
 
@@ -246,39 +256,38 @@ function Swap2(props) {
 
     }, [isSuccess])
 
-    console.log(isConnected)
-
-
 
     ////////Funcion swap///////////////////
 
     // const ethersProvider = new ethers.providers.JsonRpcProvider(`https://polygon-mainnet.infura.io/v3/2DgMveozBqxPiVbdohUrkuJBEoS`)
     // const owner = new ethers.Wallet(`71c2f48d8c6d3168766e001b658bf17675410abb3f595dae1a6f1667398e1838`, ethersProvider)
 
-    const ethersProvider = new ethers.providers.Web3Provider(window.ethereum);
-    const owner = ethersProvider.getSigner();
+    // const ethersProvider = new ethers.providers.Web3Provider(window.ethereum);
+    // const owner = ethersProvider.getSigner();
     const chainId = 137
     const uniswapRouterAddress = '0x643770E279d5D0733F21d6DC03A8efbABf3255B4'
 
 
 
-    async function approvePermit2Contract(erc20Address, amount) {
-        console.log("test")
-        const erc20 = new ethers.Contract(erc20Address, erc20Abi, owner);
-        console.log("error")
-        const approveTx = await erc20.approve(PERMIT2_ADDRESS, amount, { gasPrice: 600000000000000 });
-        console.log('approve tx hash:', approveTx.hash);
-        // wait for approve transaction confirmation
-        const receipt = await approveTx.wait();
-        if (receipt.status === 1) console.log('approve transaction confirmed');
-        else throw new Error(receipt);
-    }
+    // async function approvePermit2Contract(erc20Address, amount) {
+    //     // console.log("test")
+    //     // const erc20 = new ethers.Contract(erc20Address, erc20Abi, owner);
+    //     // console.log("error")
+    //     // const approveTx = await erc20.approve(PERMIT2_ADDRESS, amount, { gasPrice: 600000000000000 });
+    //     // console.log('approve tx hash:', approveTx.hash);
+    //     // // wait for approve transaction confirmation
+    //     // const receipt = await approveTx.wait();
+    //     // if (receipt.status === 1) console.log('approve transaction confirmed');
+    //     // else throw new Error(receipt);
 
-    async function getAllowanceAmount(erc20TokenAddress, spender) {
-        const erc20 = new ethers.Contract(erc20TokenAddress, erc20Abi, owner);
-        const allowance = await erc20.allowance(owner.getAddress(), spender);
-        return allowance;
-    }
+    //     const { data: approveHash, isLoading, isSuccess, callApprovePermit2 } = useWriteContract({
+    //         address: erc20Address,
+    //         abi: erc20Abi,
+    //         functionName: 'approve',
+    //         args: [BigInt(amount)],
+    //     })
+
+    // }
 
     async function getSwapRoute(
         sourceToken,
@@ -317,8 +326,6 @@ function Swap2(props) {
 
     async function executeSwap() {
 
-        // -------------------------------> DINÁMICO
-
         const A = new Token(
             chainId,
             tokenOne.address,
@@ -337,119 +344,102 @@ function Swap2(props) {
 
         const sourceToken = A;
         const destToken = B;
-        const amount = 0.5;
 
         const amountInWei = ethers.utils.parseUnits(
             tokenOneAmount.toString(),
             sourceToken.decimals
         );
 
-        // -------------------------------> DINÁMICO
-        // expiry for permit & tx confirmation, 30 mins
         const expiry = Math.floor(Date.now() / 1000 + 1800);
 
-        // check if we have approved enough amount
-        // for PERMIT2 in source token contract
-        const allowance = await getAllowanceAmount(
-            sourceToken.address,
-            PERMIT2_ADDRESS,
-            owner
-        );
-        console.log('current allowance:', allowance.toString());
+        
 
-        if (allowance < amountInWei) {
-            // approve permit2 contract for source token
-            console.log('sending approve tx to add more allowance');
-            await approvePermit2Contract(
-                sourceToken.address,
-
-                // Los dex le mandan el max uint256
-                // ethers.constants.MaxInt256
-
-                // -------------------------------> DINÁMICO
-                ethers.constants.MaxInt256
-            );
-        }
-
-        // allowance provider is part of permit2 sdk
-        // using it to get nonce value of last permit
-        // we signed for this source token
         const allowanceProvider = new AllowanceProvider(
             ethersProvider,
             PERMIT2_ADDRESS
         );
+
+        console.log(allowanceProvider)
 
         // for allowance based transfer we can just use
         // next nonce value for permits.
         // for signature transfer probably it has to be
         // a prime number or something. checks uniswap docs.
         // NO --------------------------->>>>>>> const nonce = 1;
-        const nonce = await allowanceProvider.getNonce(
-            sourceToken.address,
-            owner.getAddress(),
-            uniswapRouterAddress
-        );
-        console.log('nonce value:', nonce);
+
+        // const nonce = await allowanceProvider.getNonce(
+        //     sourceToken.address,
+        //     owner.getAddress(),
+        //     uniswapRouterAddress
+        // );
+        // console.log('nonce value:', nonce);
 
         // create permit with AllowanceTransfer
-        const permit = {
-            details: {
-                token: sourceToken.address,
-                amount: amountInWei,
-                expiration: expiry,
-                nonce
-            },
-            spender: uniswapRouterAddress,
-            sigDeadline: expiry
-        };
-        const { domain, types, values } = AllowanceTransfer.getPermitData(
-            permit,
-            PERMIT2_ADDRESS,
-            chainId
-        );
+
+        // const permit = {
+        //     details: {
+        //         token: sourceToken.address,
+        //         amount: amountInWei,
+        //         expiration: expiry,
+        //         nonce
+        //     },
+        //     spender: uniswapRouterAddress,
+        //     sigDeadline: expiry
+        // };
+        // const { domain, types, values } = AllowanceTransfer.getPermitData(
+        //     permit,
+        //     PERMIT2_ADDRESS,
+        //     chainId
+        // );
 
         // create signature for permit
-        const signature = await owner._signTypedData(domain, types, values);
-        console.log('signature: ', signature);
+
+        // const signature = await owner._signTypedData(domain, types, values);
+        // console.log('signature: ', signature);
 
         // NOTE: optionally verify the signature
-        const address = ethers.utils.verifyTypedData(
-            domain,
-            types,
-            values,
-            signature
-        );
 
-        if (address !== owner.getAddress())
-            throw new Error('signature verification failed');
-        else console.log(`signature verified, signed by: ${address}`);
+        // const address = ethers.utils.verifyTypedData(
+        //     domain,
+        //     types,
+        //     values,
+        //     signature
+        // );
+
+        // if (address !== owner.getAddress())
+        //     throw new Error('signature verification failed');
+        // else console.log(`signature verified, signed by: ${address}`);
 
         // get swap route for tokens
-        const route = await getSwapRoute(
-            sourceToken,
-            destToken,
-            amountInWei,
-            permit,
-            signature
-        );
 
-        console.log('route calldata:', route.methodParameters.calldata);
+        // const route = await getSwapRoute(
+        //     sourceToken,
+        //     destToken,
+        //     amountInWei,
+        //     permit,
+        //     signature
+        // );
+
+        // console.log('route calldata:', route.methodParameters.calldata);
 
         // create transaction arguments for swap
-        const txArguments = {
-            data: route.methodParameters.calldata,
-            to: uniswapRouterAddress,
-            // value: BigNumber.from(route.methodParameters.value),
-            from: owner.getAddress(),
-            gasPrice: route.gasPriceWei,
 
-            // -------------------------------> DINÁMICO
-            gasLimit: BigNumber.from('1000000')
-        };
+        // const txArguments = {
+        //     data: route.methodParameters.calldata,
+        //     to: uniswapRouterAddress,
+        //     // value: BigNumber.from(route.methodParameters.value),
+        //     from: owner.getAddress(),
+        //     gasPrice: route.gasPriceWei,
+
+        //     // -------------------------------> DINÁMICO
+        //     gasLimit: BigNumber.from('1000000')
+        // };
 
         // send out swap transaction
-        const transaction = await owner.sendTransaction(txArguments);
-        console.log('Swap transaction hash: ', transaction.hash);
+
+
+        // const transaction = await owner.sendTransaction(txArguments);
+        // console.log('Swap transaction hash: ', transaction.hash);
     }
 
 
@@ -462,15 +452,8 @@ function Swap2(props) {
 
 
     function handleSwap() {
-        console.log("TEST")
         executeSwap();
     }
-
-
-
-
-
-
 
     return (
         <>
@@ -522,12 +505,14 @@ function Swap2(props) {
                         placeholder="0"
                         value={tokenOneAmount}
                         onChange={changeAmount}
-                        disabled={!prices}
+                    // disabled={!prices}
                     />
                     <Input placeholder="0" value={tokenTwoAmount} disabled={true} />
-                    <div className="switchButton" onClick={switchTokens}>
+
+                    {/* <div className="switchButton" onClick={switchTokens}>
                         <ArrowDownOutlined className="switchArrow" />
-                    </div>
+                    </div> */}
+
                     <div className="assetOne" onClick={() => openModal(1)}>
                         <img src={tokenOne.img} alt="assetOneLogo" className="assetLogo" />
                         {tokenOne.ticker}
@@ -540,7 +525,7 @@ function Swap2(props) {
                     </div>
                     <center> <p style={{ color: "red" }}>{error}</p></center>
                 </div>
-                {
+                {/* {
                     conectado
                         ?
                         <div className="swapButton" disabled={!tokenOneAmount} onClick={handleSwap}>Swap</div>
@@ -548,7 +533,46 @@ function Swap2(props) {
 
                         :
                         <div className="swapButton" onClick={connectWallet} >Conectar Billetera</div>
-                }
+                } */}
+
+                <div className='w-full'>
+
+                    {!isConnected ? (
+                        <button className='text-teal-500 font-bold w-full bg-emerald-950 py-4 rounded-xl mt-5 text-xl'
+                            onClick={() => connect({ connector: injected() })}>
+                            Connect
+                        </button>
+                    ) : (
+                        allowancePermit2 < tokenOneAmount * 10 ** tokenOne.decimals ? (
+                            <button className='text-teal-500 font-bold w-full bg-emerald-950 py-4 rounded-xl mt-5 text-xl'
+                                onClick={() =>
+                                    writeContract({
+                                        abi: erc20Abi,
+                                        address: tokenOne.address,
+                                        functionName: 'approve',
+                                        args: [
+                                            PERMIT2_ADDRESS,
+                                            tokenOneAmount * 10 ** tokenOne.decimals
+                                        ],
+                                    })
+                                }
+                            >
+                                Approve
+                            </button>
+                        ) : (
+                            <button className='text-teal-500 font-bold w-full bg-emerald-950 py-4 rounded-xl mt-5 text-xl'
+                                onClick={() => handleSwap()}
+                            >
+                                Swap
+                            </button>
+                        )
+                    )}
+
+                    {console.log('Allowance: ' + allowancePermit2)}
+
+
+
+                </div>
 
             </div>
         </>
