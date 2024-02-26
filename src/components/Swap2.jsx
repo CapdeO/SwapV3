@@ -7,8 +7,16 @@ import {
 } from "@ant-design/icons";
 import tokenList from "../utils/tokenList.json";
 import axios from "axios";
-import { useAccount, useConnect, useWriteContract, useReadContract, useSendTransaction, useWaitForTransactionReceipt } from "wagmi";
-import { ethers, BigNumber } from 'ethers';
+import {
+    useAccount,
+    useConnect,
+    useWriteContract,
+    useReadContract,
+    useSendTransaction,
+    useWaitForTransactionReceipt,
+    useSignTypedData
+} from "wagmi";
+import { ethers, BigNumber, utils } from 'ethers';
 import abiSwap from '../utils/abiSwap.json'
 import {
     PERMIT2_ADDRESS,
@@ -20,11 +28,12 @@ import { CurrencyAmount, TradeType, Percent } from '@uniswap/sdk-core'
 import erc20Abi from '../utils/ERC20.json'
 import { Token } from '@uniswap/sdk-core'
 import { injected } from 'wagmi/connectors'
-import { useEthersProvider } from "../utils/ethers.ts";
+import { useEthersProvider, useEthersSigner } from "../utils/ethers.ts";
 
 function Swap2() {
     const { address: account, isConnected } = useAccount();
     const ethersProvider = useEthersProvider()
+    const signer = useEthersSigner()
     const { connect } = useConnect()
     const { writeContract } = useWriteContract()
     const [messageApi, contextHolder] = message.useMessage();
@@ -300,14 +309,15 @@ function Swap2() {
             sourceToken,
             amountInWei.toString()
         );
-
+        
         const router = new AlphaRouter({ chainId, provider: ethersProvider });
+
         const route = await router.route(
             inputAmount,
             destToken,
             TradeType.EXACT_INPUT,
             {
-                recipient: owner.getAddress(),
+                recipient: account,
                 slippageTolerance: new Percent(5, 1000),
 
                 type: SwapType.UNIVERSAL_ROUTER,
@@ -326,24 +336,40 @@ function Swap2() {
 
     async function executeSwap() {
 
-        const A = new Token(
+        // const A = new Token(
+        //     chainId,
+        //     tokenOne.address,
+        //     tokenOne.decimals,
+        //     tokenOne.ticker,
+        //     tokenOne.name
+        // );
+
+        // const B = new Token(
+        //     chainId,
+        //     tokenTwo.address,
+        //     tokenTwo.decimals,
+        //     tokenTwo.ticker,
+        //     tokenTwo.name
+        // );
+
+        const USDC = new Token(
             chainId,
-            tokenOne.address,
-            tokenOne.decimals,
-            tokenOne.ticker,
-            tokenOne.name
+            '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174',
+            6,
+            'USDC',
+            'USDC.e POS'
         );
 
-        const B = new Token(
+        const XCRE = new Token(
             chainId,
-            tokenTwo.address,
-            tokenTwo.decimals,
-            tokenTwo.ticker,
-            tokenTwo.name
+            '0xFA3c05C2023918A4324fDE7163591Fe6BEBd1692',
+            18,
+            'XCRE',
+            'Cresio '
         );
 
-        const sourceToken = A;
-        const destToken = B;
+        const sourceToken = USDC
+        const destToken = XCRE
 
         const amountInWei = ethers.utils.parseUnits(
             tokenOneAmount.toString(),
@@ -352,73 +378,45 @@ function Swap2() {
 
         const expiry = Math.floor(Date.now() / 1000 + 1800);
 
-        
-
         const allowanceProvider = new AllowanceProvider(
             ethersProvider,
             PERMIT2_ADDRESS
         );
 
-        console.log(allowanceProvider)
+        const nonce = await allowanceProvider.getNonce(
+            sourceToken.address,
+            account,
+            uniswapRouterAddress
+        );
+        console.log('nonce value:', nonce);
 
-        // for allowance based transfer we can just use
-        // next nonce value for permits.
-        // for signature transfer probably it has to be
-        // a prime number or something. checks uniswap docs.
-        // NO --------------------------->>>>>>> const nonce = 1;
+        const permit = {
+            details: {
+                token: sourceToken.address,
+                amount: amountInWei,
+                expiration: expiry,
+                nonce
+            },
+            spender: uniswapRouterAddress,
+            sigDeadline: expiry
+        };
+        const { domain, types, values } = AllowanceTransfer.getPermitData(
+            permit,
+            PERMIT2_ADDRESS,
+            chainId
+        );
 
-        // const nonce = await allowanceProvider.getNonce(
-        //     sourceToken.address,
-        //     owner.getAddress(),
-        //     uniswapRouterAddress
-        // );
-        // console.log('nonce value:', nonce);
+        const useSigner = await signer
 
-        // create permit with AllowanceTransfer
+        const signature = await useSigner._signTypedData(domain, types, values);
 
-        // const permit = {
-        //     details: {
-        //         token: sourceToken.address,
-        //         amount: amountInWei,
-        //         expiration: expiry,
-        //         nonce
-        //     },
-        //     spender: uniswapRouterAddress,
-        //     sigDeadline: expiry
-        // };
-        // const { domain, types, values } = AllowanceTransfer.getPermitData(
-        //     permit,
-        //     PERMIT2_ADDRESS,
-        //     chainId
-        // );
-
-        // create signature for permit
-
-        // const signature = await owner._signTypedData(domain, types, values);
-        // console.log('signature: ', signature);
-
-        // NOTE: optionally verify the signature
-
-        // const address = ethers.utils.verifyTypedData(
-        //     domain,
-        //     types,
-        //     values,
-        //     signature
-        // );
-
-        // if (address !== owner.getAddress())
-        //     throw new Error('signature verification failed');
-        // else console.log(`signature verified, signed by: ${address}`);
-
-        // get swap route for tokens
-
-        // const route = await getSwapRoute(
-        //     sourceToken,
-        //     destToken,
-        //     amountInWei,
-        //     permit,
-        //     signature
-        // );
+        const route = await getSwapRoute(
+            sourceToken,
+            destToken,
+            amountInWei,
+            permit,
+            signature
+        );
 
         // console.log('route calldata:', route.methodParameters.calldata);
 
@@ -567,10 +565,6 @@ function Swap2() {
                             </button>
                         )
                     )}
-
-                    {console.log('Allowance: ' + allowancePermit2)}
-
-
 
                 </div>
 
