@@ -93,16 +93,16 @@ function Swap2() {
         }
     }
 
-    // function switchTokens() {
-    //     setPrices(null);
-    //     setTokenOneAmount(null);
-    //     setTokenTwoAmount(null);
-    //     const one = tokenOne;
-    //     const two = tokenTwo;
-    //     setTokenOne(two);
-    //     setTokenTwo(one);
-    //     fetchPrices(two.address, one.address);
-    // }
+    function switchTokens() {
+        setPrices(null);
+        setTokenOneAmount(null);
+        setTokenTwoAmount(null);
+        const one = tokenOne;
+        const two = tokenTwo;
+        setTokenOne(two);
+        setTokenTwo(one);
+        fetchPrices(two.address, one.address);
+    }
 
     function openModal(asset) {
         setChangeToken(asset);
@@ -124,14 +124,14 @@ function Swap2() {
     }
 
 
-    // async function fetchPrices(one, two) {
+    async function fetchPrices(one, two) {
 
-    //     const res = await axios.get(`https://beathard-backend.fly.dev/tokenPrice`, {
-    //         params: { addressOne: one, addressTwo: two }
-    //     })
+        const res = await axios.get(`https://beathard-backend.fly.dev/tokenPrice`, {
+            params: { addressOne: one, addressTwo: two }
+        })
 
-    //     setPrices(res.data)
-    // }
+        setPrices(res.data)
+    }
 
 
 
@@ -204,26 +204,24 @@ function Swap2() {
     //     }
     // }
 
-    // async function putPrice() {
-    //     const res = await axios.get(`https://beathard-backend.fly.dev/tokenPrice`, {
-    //         params: { addressOne: "0xFA3c05C2023918A4324fDE7163591Fe6BEBd1692", addressTwo: "0xFA3c05C2023918A4324fDE7163591Fe6BEBd1692" }
-    //     })
-    //     setPriceToken(parseFloat(res.data.tokenOne).toFixed(4));
-
-
-    // }
+    async function putPrice() {
+        const res = await axios.get(`https://beathard-backend.fly.dev/tokenPrice`, {
+            params: { addressOne: "0xFA3c05C2023918A4324fDE7163591Fe6BEBd1692", addressTwo: "0xFA3c05C2023918A4324fDE7163591Fe6BEBd1692" }
+        })
+        setPriceToken(parseFloat(res.data.tokenOne).toFixed(4));
+    }
 
 
 
 
-    // useEffect(() => {
+    useEffect(() => {
 
-    //     fetchPrices(tokenList[0].address, tokenList[1].address)
+        fetchPrices(tokenList[0].address, tokenList[1].address)
 
-    //     // connectWallet()
-    //     putPrice()
+        // connectWallet()
+        putPrice()
 
-    // }, [])
+    }, [])
 
     // useEffect(() => {
 
@@ -309,7 +307,7 @@ function Swap2() {
             sourceToken,
             amountInWei.toString()
         );
-        
+
         const router = new AlphaRouter({ chainId, provider: ethersProvider });
 
         const route = await router.route(
@@ -336,44 +334,27 @@ function Swap2() {
 
     async function executeSwap() {
 
-        // const A = new Token(
-        //     chainId,
-        //     tokenOne.address,
-        //     tokenOne.decimals,
-        //     tokenOne.ticker,
-        //     tokenOne.name
-        // );
-
-        // const B = new Token(
-        //     chainId,
-        //     tokenTwo.address,
-        //     tokenTwo.decimals,
-        //     tokenTwo.ticker,
-        //     tokenTwo.name
-        // );
-
-        const USDC = new Token(
+        const A = new Token(
             chainId,
-            '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174',
-            6,
-            'USDC',
-            'USDC.e POS'
+            tokenOne.address,
+            tokenOne.decimals,
+            tokenOne.ticker,
+            tokenOne.name
         );
 
-        const XCRE = new Token(
+        const B = new Token(
             chainId,
-            '0xFA3c05C2023918A4324fDE7163591Fe6BEBd1692',
-            18,
-            'XCRE',
-            'Cresio '
+            tokenTwo.address,
+            tokenTwo.decimals,
+            tokenTwo.ticker,
+            tokenTwo.name
         );
 
-        const sourceToken = USDC
-        const destToken = XCRE
+        const sourceToken = A
+        const destToken = B
 
         const amountInWei = ethers.utils.parseUnits(
-            // tokenOneAmount.toString(),
-            '0.01',
+            tokenOneAmount.toString(),
             sourceToken.decimals
         );
 
@@ -469,7 +450,7 @@ function Swap2() {
                 </div>
                 <div className="tradeBoxHeader">
                     <h4>Swap</h4>
-                    {/*<h5>Balance de XCRE:</h5>*/}
+                    {/*<h5>Balance de XCRE:</h5>
 
                     {/*  <Popover
             content={settings}
@@ -485,13 +466,13 @@ function Swap2() {
                         placeholder="0"
                         value={tokenOneAmount}
                         onChange={changeAmount}
-                    // disabled={!prices}
+                        disabled={!prices}
                     />
                     <Input placeholder="0" value={tokenTwoAmount} disabled={true} />
 
-                    {/* <div className="switchButton" onClick={switchTokens}>
+                    <div className="switchButton" onClick={switchTokens}>
                         <ArrowDownOutlined className="switchArrow" />
-                    </div> */}
+                    </div>
 
                     <div className="assetOne" onClick={() => openModal(1)}>
                         <img src={tokenOne.img} alt="assetOneLogo" className="assetLogo" />
@@ -516,7 +497,6 @@ function Swap2() {
                 } */}
 
                 <div className='w-full'>
-
                     {!isConnected ? (
                         <button className='text-teal-500 font-bold w-full bg-emerald-950 py-4 rounded-xl mt-5 text-xl'
                             onClick={() => connect({ connector: injected() })}>
@@ -547,9 +527,7 @@ function Swap2() {
                             </button>
                         )
                     )}
-
                 </div>
-
             </div>
         </>
     );
