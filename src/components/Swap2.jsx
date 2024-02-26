@@ -330,7 +330,7 @@ function Swap2() {
                 }
             }
         );
-        console.log(`Quote Exact In: ${amountInWei}  -> ${route.quote.toExact()}`);
+        // console.log(`Quote Exact In: ${amountInWei}  -> ${route.quote.toExact()}`);
         return route;
     }
 
@@ -372,7 +372,8 @@ function Swap2() {
         const destToken = XCRE
 
         const amountInWei = ethers.utils.parseUnits(
-            tokenOneAmount.toString(),
+            // tokenOneAmount.toString(),
+            '0.01',
             sourceToken.decimals
         );
 
