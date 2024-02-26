@@ -330,7 +330,7 @@ function Swap2() {
                 }
             }
         );
-        // console.log(`Quote Exact In: ${amountInWei}  -> ${route.quote.toExact()}`);
+        console.log(`Quote Exact In: ${amountInWei}  -> ${route.quote.toExact()}`);
         return route;
     }
 
@@ -419,36 +419,17 @@ function Swap2() {
             signature
         );
 
-        // console.log('route calldata:', route.methodParameters.calldata);
+        const txArguments = {
+            data: route.methodParameters.calldata,
+            to: uniswapRouterAddress,
+            // value: BigNumber.from(route.methodParameters.value),
+            from: account,
+            gasPrice: route.gasPriceWei,
+        };
 
-        // create transaction arguments for swap
-
-        // const txArguments = {
-        //     data: route.methodParameters.calldata,
-        //     to: uniswapRouterAddress,
-        //     // value: BigNumber.from(route.methodParameters.value),
-        //     from: owner.getAddress(),
-        //     gasPrice: route.gasPriceWei,
-
-        //     // -------------------------------> DINÁMICO
-        //     gasLimit: BigNumber.from('1000000')
-        // };
-
-        // send out swap transaction
-
-
-        // const transaction = await owner.sendTransaction(txArguments);
-        // console.log('Swap transaction hash: ', transaction.hash);
+        const transaction = await useSigner.sendTransaction(txArguments);
+        console.log('Swap transaction hash: ', transaction.hash);
     }
-
-
-
-    //////////////////Termina////////////
-
-
-
-
-
 
     function handleSwap() {
         executeSwap();
