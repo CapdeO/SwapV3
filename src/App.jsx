@@ -4,6 +4,7 @@ import { http, createConfig, WagmiProvider } from 'wagmi'
 import { polygon } from 'viem/chains'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import "./App.css";
+import BackGround from './assets/bg.png'
 
 function App() {
   const config = createConfig({
@@ -17,9 +18,12 @@ function App() {
   return (
     <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>
-        <div className='bg-orange-400 h-screen flex justify-center items-center'>
-          <Swap2 />
+        <div className='bg-gray-900'>
+          <div className='h-screen flex justify-center items-center bg-custom'>
+            <Swap2 />
+          </div>
         </div>
+
       </QueryClientProvider>
     </WagmiProvider>
   )

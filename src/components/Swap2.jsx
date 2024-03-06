@@ -29,13 +29,14 @@ import erc20Abi from '../utils/ERC20.json'
 import { Token } from '@uniswap/sdk-core'
 import { injected } from 'wagmi/connectors'
 import { useEthersProvider, useEthersSigner } from "../utils/ethers.ts";
+import cresioLogo from '../assets/Capa 2.png'
 
 function Swap2() {
     const { address: account, isConnected } = useAccount();
     const ethersProvider = useEthersProvider()
     const signer = useEthersSigner()
     const { connect } = useConnect()
-    const { writeContract } = useWriteContract()
+    const { isPending, writeContract } = useWriteContract()
     const [messageApi, contextHolder] = message.useMessage();
     const [slippage, setSlippage] = useState(2.5);
     const [tokenOneAmount, setTokenOneAmount] = useState(null);
@@ -210,9 +211,6 @@ function Swap2() {
         })
         setPriceToken(parseFloat(res.data.tokenOne).toFixed(4));
     }
-
-
-
 
     useEffect(() => {
 
@@ -444,35 +442,45 @@ function Swap2() {
                 </div>
             </Modal>
             <div className="tradeBox">
-                <center>     <img src="https://s2.coinmarketcap.com/static/img/coins/64x64/16639.png" style={{ display: "inline-block", width: "40px" }}></img> <h5 style={{ display: "inline-block" }}>{priceToken} $</h5></center>
-                <div className="tradeBoxHeader">
+                <div className="w-full flex items-center justify-between px-1 py-5 mb-5">
+                    {/* <img src="https://s2.coinmarketcap.com/static/img/coins/64x64/16639.png" 
+                        style={{ display: "inline-block", width: "40px" }} 
+                    /> */}
+                    <img src={cresioLogo} />
+                    <span className="font-bold text-lg">
+                        {priceToken + ' $'}
+                    </span>
 
                 </div>
-                <div className="tradeBoxHeader">
-                    <h4>Swap</h4>
-                    {/*<h5>Balance de XCRE:</h5>
-
-                    {/*  <Popover
-            content={settings}
-            title="Settings"
-            trigger="click"
-            placement="bottomRight"
-          >
-            <SettingOutlined className="cog" />
-        </Popover>*/}
+                <div>
+                    <span className="font-bold">
+                        Swap
+                    </span>
                 </div>
-                <div className="inputs">
+                {/* <div className="tradeBoxHeader border-2">
+                    <h5>Balance de XCRE:</h5>
+
+                     <Popover
+                        content={settings}
+                        title="Settings"
+                        trigger="click"
+                        placement="bottomRight"
+                    >
+                        <SettingOutlined className="cog" />
+                    </Popover>
+                </div> */}
+                <div className="inputs flex flex-col items-center">
                     <Input
                         placeholder="0"
                         value={tokenOneAmount}
                         onChange={changeAmount}
-                        disabled={!prices}
+                    // disabled={!prices}
                     />
-                    <Input placeholder="0" value={tokenTwoAmount} disabled={true} />
-
-                    <div className="switchButton" onClick={switchTokens}>
+                    <div className="switchButton -my-3 z-10 h-7 w-7" onClick={switchTokens}>
                         <ArrowDownOutlined className="switchArrow" />
                     </div>
+                    <Input placeholder="0" value={tokenTwoAmount} disabled={true} />
+
 
                     <div className="assetOne" onClick={() => openModal(1)}>
                         <img src={tokenOne.img} alt="assetOneLogo" className="assetLogo" />
@@ -486,25 +494,16 @@ function Swap2() {
                     </div>
                     <center> <p style={{ color: "red" }}>{error}</p></center>
                 </div>
-                {/* {
-                    conectado
-                        ?
-                        <div className="swapButton" disabled={!tokenOneAmount} onClick={handleSwap}>Swap</div>
-
-
-                        :
-                        <div className="swapButton" onClick={connectWallet} >Conectar Billetera</div>
-                } */}
 
                 <div className='w-full'>
                     {!isConnected ? (
-                        <button className='text-teal-500 font-bold w-full bg-emerald-950 py-4 rounded-xl mt-5 text-xl'
+                        <button className='text-neutral-700 font-bold w-full bg-amber-300 py-4 rounded-xl mt-1 mb-7 text-2xl'
                             onClick={() => connect({ connector: injected() })}>
-                            Connect
+                            CONNECT
                         </button>
                     ) : (
                         allowancePermit2 < tokenOneAmount * 10 ** tokenOne.decimals ? (
-                            <button className='text-teal-500 font-bold w-full bg-emerald-950 py-4 rounded-xl mt-5 text-xl'
+                            <button className='text-neutral-700 font-bold w-full bg-amber-300 py-4 rounded-xl mt-1 mb-7 text-2xl'
                                 onClick={() =>
                                     writeContract({
                                         abi: erc20Abi,
@@ -517,16 +516,20 @@ function Swap2() {
                                     })
                                 }
                             >
-                                Approve
+                                {isPending ? <div class="loader"></div> : 'Approve'}
                             </button>
                         ) : (
-                            <button className='text-teal-500 font-bold w-full bg-emerald-950 py-4 rounded-xl mt-5 text-xl'
+                            <button className='text-neutral-700 font-bold w-full bg-amber-300 py-4 rounded-xl mt-1 mb-7 text-2xl'
                                 onClick={() => handleSwap()}
                             >
                                 Swap
                             </button>
                         )
                     )}
+
+                    {/* <button className='flex justify-center text-neutral-700 font-bold w-full bg-amber-300 py-4 rounded-xl mt-1 mb-7 text-2xl'>
+                        <div class="loader"></div>
+                    </button> */}
                 </div>
             </div>
         </>

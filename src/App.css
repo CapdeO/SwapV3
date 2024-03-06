@@ -115,20 +115,31 @@ header {
 
 .switchButton {
     background-color: #3a4157;
-    width: 25px;
-    height: 25px;
     align-items: center;
     justify-content: center;
     display: flex;
     border-radius: 8px;
-    position: absolute;
-    top: 86px;
-    left: 180px;
+    position: relative;
     color: #5F6783;
     border: 3px solid #0E111B;
     font-size: 12px;
     transition: 0.3s
 }
+
+.loader {
+    border: 6px solid #023557;
+    border-top: 6px solid #2ebfe3;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
 
 .dollarAmount {
     position: absolute;
