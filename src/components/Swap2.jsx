@@ -30,13 +30,15 @@ import { Token } from '@uniswap/sdk-core'
 import { injected } from 'wagmi/connectors'
 import { useEthersProvider, useEthersSigner } from "../utils/ethers.ts";
 import cresioLogo from '../assets/Capa 2.png'
+import Alert from './Alert.jsx'
 
 function Swap2() {
     const { address: account, isConnected } = useAccount();
     const ethersProvider = useEthersProvider()
     const signer = useEthersSigner()
     const { connect } = useConnect()
-    const { isPending, writeContract } = useWriteContract()
+    const { data: hash, error: approveError, writeContract, isPending } = useWriteContract()
+    const { isLoading: isLoadingApprove, isSuccess: isSuccessApprove } = useWaitForTransactionReceipt({ hash })
     const [messageApi, contextHolder] = message.useMessage();
     const [slippage, setSlippage] = useState(2.5);
     const [tokenOneAmount, setTokenOneAmount] = useState(null);
@@ -51,39 +53,18 @@ function Swap2() {
         to: null,
         data: null,
         value: null,
-    });
-    const [conectado, setConectado] = useState(false)
-    const [error, setError] = useState("")
-
-    const { data, sendTransaction } = useWaitForTransactionReceipt({
-        request: {
-            from: account,
-            to: String(txDetails.to),
-            data: String(txDetails.data),
-            value: String(txDetails.value),
-        }
     })
+    const [error, setError] = useState("")
+    const [approvalDone, setApprovalDone] = useState(false)
+    const [alertOpen, setAlertOpen] = useState(false)
+    const [alertText, setAlertText] = useState('Alert Text')
 
-    const { data: allowancePermit2 } = useReadContract({
+    const { data: userBalance } = useReadContract({
         address: tokenOne.address,
         abi: erc20Abi,
-        functionName: 'allowance',
-        args: [account, PERMIT2_ADDRESS]
+        functionName: 'balanceOf',
+        args: [account]
     })
-
-    useEffect(() => {
-        window.Browser = {
-            T: () => { }
-        };
-    }, []);
-
-    const { isLoading, isSuccess } = useWaitForTransactionReceipt({
-        hash: data?.hash,
-    })
-
-    function handleSlippageChange(e) {
-        setSlippage(e.target.value);
-    }
 
     function changeAmount(e) {
         setTokenOneAmount(e.target.value);
@@ -124,6 +105,17 @@ function Swap2() {
         setIsOpen(false);
     }
 
+    const approvePermitContract = () => {
+        writeContract({
+            abi: erc20Abi,
+            address: tokenOne.address,
+            functionName: 'approve',
+            args: [
+                PERMIT2_ADDRESS,
+                tokenOneAmount * 10 ** tokenOne.decimals
+            ],
+        })
+    }
 
     async function fetchPrices(one, two) {
 
@@ -133,77 +125,6 @@ function Swap2() {
 
         setPrices(res.data)
     }
-
-
-
-    async function fetchDexSwap() {
-        /* if (window.ethereum) {
-           try {
-               const provider = new ethers.providers.Web3Provider(window.ethereum);
-               await provider.send("eth_requestAccounts", []);
-               const signer = provider.getSigner();
-               console.log("Account:", await signer.getAddress());
-           } catch (error) {
-               console.error(error);
-           }
-         } else {
-           console.log('Ethereum object not found, install MetaMask.');
-         }
-       */
-
-        // const provider = new ethers.providers.Web3Provider(window.ethereum);
-        // const signer = provider.getSigner();
-
-        const contractToken = new ethers.Contract(
-            tokenOne.address, [
-            "function approve(address spender, uint256 amount) public returns (bool)"
-        ],
-            signer);
-
-        const contract = new ethers.Contract(
-            "0x112D67F14f6C30c3725b7f9A08610bc24c8d5A84", abiSwap,
-            signer);
-
-
-
-
-        try {
-            const transaction = await contractToken.approve("0x112D67F14f6C30c3725b7f9A08610bc24c8d5A84", ethers.constants.MaxUint256);
-
-            const receipt = await transaction.wait();
-            if (receipt && receipt.status === 1) {
-                const swapTransaction = await contract.swapDAIToUSDC(
-                    ethers.utils.parseUnits(tokenOneAmount.toString(), tokenOne.decimals).toString(),
-                    tokenOne.address,
-                    tokenTwo.address
-                );
-
-                await swapTransaction.wait();
-            }
-        } catch (error) {
-            setError('Error en swap. Verifique su saldo y vuelva a intentar');
-        }
-    }
-
-    // const connectWallet = async () => {
-    //     if (window.ethereum) {
-    //         try {
-    //             const provider = new ethers.providers.Web3Provider(window.ethereum);
-    //             await provider.send("eth_requestAccounts", []);
-    //             const signer = provider.getSigner();
-    //             console.log("Account:", await signer.getAddress());
-    //             setConectado(true)
-    //         } catch (error) {
-    //             console.error(error);
-    //             //  setError("Error al conectar la wallet")
-    //             setConectado(false)
-    //         }
-    //     } else {
-    //         console.log('Ethereum object not found, install MetaMask.');
-    //         setError("Instale Metamask")
-    //         setConectado(false)
-    //     }
-    // }
 
     async function putPrice() {
         const res = await axios.get(`https://beathard-backend.fly.dev/tokenPrice`, {
@@ -216,83 +137,12 @@ function Swap2() {
 
         fetchPrices(tokenList[0].address, tokenList[1].address)
 
-        // connectWallet()
         putPrice()
 
     }, [])
 
-    // useEffect(() => {
-
-    //     if (txDetails.to && account) {
-    //         // sendTransaction();
-    //     }
-    // }, [txDetails])
-
-    useEffect(() => {
-
-        messageApi.destroy();
-
-        if (isLoading) {
-            messageApi.open({
-                type: 'loading',
-                content: 'Transaction is Pending...',
-                duration: 0,
-            })
-        }
-
-    }, [isLoading])
-
-    useEffect(() => {
-        messageApi.destroy();
-        if (isSuccess) {
-            messageApi.open({
-                type: 'success',
-                content: 'Transaction Successful',
-                duration: 1.5,
-            })
-        } else if (txDetails.to) {
-            messageApi.open({
-                type: 'error',
-                content: 'Transaction Failed',
-                duration: 1.50,
-            })
-        }
-
-
-    }, [isSuccess])
-
-
-    ////////Funcion swap///////////////////
-
-    // const ethersProvider = new ethers.providers.JsonRpcProvider(`https://polygon-mainnet.infura.io/v3/2DgMveozBqxPiVbdohUrkuJBEoS`)
-    // const owner = new ethers.Wallet(`71c2f48d8c6d3168766e001b658bf17675410abb3f595dae1a6f1667398e1838`, ethersProvider)
-
-    // const ethersProvider = new ethers.providers.Web3Provider(window.ethereum);
-    // const owner = ethersProvider.getSigner();
     const chainId = 137
     const uniswapRouterAddress = '0x643770E279d5D0733F21d6DC03A8efbABf3255B4'
-
-
-
-    // async function approvePermit2Contract(erc20Address, amount) {
-    //     // console.log("test")
-    //     // const erc20 = new ethers.Contract(erc20Address, erc20Abi, owner);
-    //     // console.log("error")
-    //     // const approveTx = await erc20.approve(PERMIT2_ADDRESS, amount, { gasPrice: 600000000000000 });
-    //     // console.log('approve tx hash:', approveTx.hash);
-    //     // // wait for approve transaction confirmation
-    //     // const receipt = await approveTx.wait();
-    //     // if (receipt.status === 1) console.log('approve transaction confirmed');
-    //     // else throw new Error(receipt);
-
-    //     const { data: approveHash, isLoading, isSuccess, callApprovePermit2 } = useWriteContract({
-    //         address: erc20Address,
-    //         abi: erc20Abi,
-    //         functionName: 'approve',
-    //         args: [BigInt(amount)],
-    //     })
-
-    // }
 
     async function getSwapRoute(
         sourceToken,
@@ -411,7 +261,20 @@ function Swap2() {
     }
 
     function handleSwap() {
+
+        console.log('User balance: ', userBalance)
+        if (userBalance < tokenOneAmount * 10 ** tokenOne.decimals) {
+            setAlertText(`Balance insuficiente. Balance actual: ${ parseFloat(ethers.utils.formatUnits(userBalance, tokenOne.decimals)).toFixed(2) }`)
+            setApprovalDone(false)
+            setAlertOpen(true)
+            return
+        }
+
         executeSwap();
+    }
+
+    if (isSuccessApprove && !approvalDone) {
+        setApprovalDone(true);
     }
 
     return (
@@ -502,21 +365,13 @@ function Swap2() {
                             CONNECT
                         </button>
                     ) : (
-                        allowancePermit2 < tokenOneAmount * 10 ** tokenOne.decimals ? (
-                            <button className='text-neutral-700 font-bold w-full bg-amber-300 py-4 rounded-xl mt-1 mb-7 text-2xl'
-                                onClick={() =>
-                                    writeContract({
-                                        abi: erc20Abi,
-                                        address: tokenOne.address,
-                                        functionName: 'approve',
-                                        args: [
-                                            PERMIT2_ADDRESS,
-                                            tokenOneAmount * 10 ** tokenOne.decimals
-                                        ],
-                                    })
-                                }
+                        !approvalDone ? (
+                            <button className='flex justify-center items-center text-neutral-700 font-bold w-full bg-amber-300 py-4 rounded-xl mt-1 mb-7 text-2xl'
+                                onClick={() => approvePermitContract()}
+                                disabled={isPending}
                             >
-                                {isPending ? <div class="loader"></div> : 'Approve'}
+                                {isPending ? <div className="loader" /> : 'Approve'}
+                                {isLoadingApprove && <div className="loader" />}
                             </button>
                         ) : (
                             <button className='text-neutral-700 font-bold w-full bg-amber-300 py-4 rounded-xl mt-1 mb-7 text-2xl'
@@ -527,9 +382,37 @@ function Swap2() {
                         )
                     )}
 
-                    {/* <button className='flex justify-center text-neutral-700 font-bold w-full bg-amber-300 py-4 rounded-xl mt-1 mb-7 text-2xl'>
-                        <div class="loader"></div>
-                    </button> */}
+                    {/* {isLoadingApprove && (
+                        <button className='flex justify-center text-neutral-700 font-bold w-full bg-amber-300 py-4 rounded-xl mt-1 mb-7 text-2xl'>
+                            <div className="loader"></div>
+                        </button>
+                    )} */}
+
+                    {/* {hash && (
+                        <div className="text-center rounded-xl p-2 bg-gray-700 my-1">
+                            Transaction Hash: {hash}
+                        </div>
+                    )} */}
+                    {/* {isLoadingApprove && (
+                        <div className="text-blue-500 text-center rounded-xl p-2 bg-gray-700 my-1">
+                            Waiting for confirmation...
+                        </div>
+                    )} */}
+
+
+                    {/* {isSuccessApprove && (setApprovalDone(true))} */}
+
+
+                    {/* {approveError && (
+                        <div className="text-red-500 text-center rounded-xl p-2 bg-gray-700 my-1">
+                            {error.shortMessage || error.message}
+                        </div>
+                    )} */}
+
+                    {alertOpen && (
+                        <Alert _errorText={alertText} _function={() => setAlertOpen(false)} />
+                    )}
+
                 </div>
             </div>
         </>
