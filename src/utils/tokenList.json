@@ -22,6 +22,30 @@
         "name": "Cresio",
         "address": "0xFA3c05C2023918A4324fDE7163591Fe6BEBd1692",
         "decimals": 18
+    },
+
+    {
+        "ticker": "USDC.e",
+        "img": "https://s2.coinmarketcap.com/static/img/coins/64x64/18852.png",
+        "name": "USD Coin (PoS)",
+        "address": "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174",
+        "decimals": 6
+    },
+
+    {
+        "ticker": "USDC",
+        "img": "https://s2.coinmarketcap.com/static/img/coins/64x64/18852.png",
+        "name": "USD Coin",
+        "address": "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359",
+        "decimals": 6
+    },
+
+    {
+        "ticker": "BUSD",
+        "img": "https://polygonscan.com/token/images/busdnew_32.png",
+        "name": "Binance-Peg BUSD",
+        "address": "0x9C9e5fD8bbc25984B178FdCE6117Defa39d2db39",
+        "decimals": 6
     }
     
 ]

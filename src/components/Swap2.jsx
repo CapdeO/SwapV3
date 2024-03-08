@@ -31,6 +31,7 @@ import { injected } from 'wagmi/connectors'
 import { useEthersProvider, useEthersSigner } from "../utils/ethers.ts";
 import cresioLogo from '../assets/Capa 2.png'
 import Alert from './Alert.jsx'
+import coin from '../assets/coin.png'
 
 function Swap2() {
     const { address: account, isConnected } = useAccount();
@@ -43,8 +44,16 @@ function Swap2() {
     const [slippage, setSlippage] = useState(2.5);
     const [tokenOneAmount, setTokenOneAmount] = useState(null);
     const [tokenTwoAmount, setTokenTwoAmount] = useState(null);
-    const [tokenOne, setTokenOne] = useState(tokenList[0]);
-    const [tokenTwo, setTokenTwo] = useState(tokenList[2]);
+    // const [tokenOne, setTokenOne] = useState(tokenList[0]);
+    const [tokenOne, setTokenOne] = useState({
+        'ticker': 'SELECT TOKEN',
+        'img': coin
+    });
+    // const [tokenTwo, setTokenTwo] = useState(tokenList[2]);
+    const [tokenTwo, setTokenTwo] = useState({
+        'ticker': 'SELECT TOKEN',
+        'img': coin
+    });
     const [isOpen, setIsOpen] = useState(false);
     const [changeToken, setChangeToken] = useState(1);
     const [prices, setPrices] = useState(null);
