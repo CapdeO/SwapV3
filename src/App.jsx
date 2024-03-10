@@ -19,7 +19,14 @@ function App() {
     <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>
         <div className='bg-gray-900'>
-          <div className='h-screen flex justify-center items-center bg-custom'>
+          <div className='h-screen flex flex-col justify-center items-center bg-custom'>
+
+            <div className='w-full flex absolute top-0 p-16'>
+              <div className='bg-gray-700 p-3 rounded-xl'>
+                <img src="https://kryzum.com/wp-content/uploads/2020/06/Logo200X40.png" className='h-9' />
+              </div>
+            </div>
+
             <Swap2 />
           </div>
         </div>

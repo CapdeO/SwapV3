@@ -313,6 +313,8 @@ function Swap2() {
                     })}
                 </div>
             </Modal>
+
+            
             <div className="tradeBox">
                 <div className="w-full flex items-center justify-between px-1 py-5 mb-5">
                     {/* <img src="https://s2.coinmarketcap.com/static/img/coins/64x64/16639.png" 
